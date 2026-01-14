@@ -1,9 +1,8 @@
-﻿using Soenneker.Tests.Unit;
-using Xunit;
+﻿using Xunit;
 
 namespace Soenneker.Atomics.Strings.Tests;
 
-public sealed class AtomicStringTests : UnitTest
+public sealed class AtomicStringTests
 {
     [Fact]
     public void Default()
