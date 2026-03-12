@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Soenneker.Atomics.Strings.csproj" />
+        <ProjectReference Include="..\..\src\Soenneker.Atomics.Strings\Soenneker.Atomics.Strings.csproj" />
     </ItemGroup>
 
     <ItemGroup>
