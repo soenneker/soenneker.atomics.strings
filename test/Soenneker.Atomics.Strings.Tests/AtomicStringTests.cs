@@ -1,10 +1,9 @@
-﻿using Xunit;
 
 namespace Soenneker.Atomics.Strings.Tests;
 
 public sealed class AtomicStringTests
 {
-    [Fact]
+    [Test]
     public void Default()
     {
 
