@@ -16,6 +16,7 @@ public sealed class AtomicString
     /// <summary>
     /// Returns the current value (may be null).
     /// </summary>
+    /// <returns>The current value.</returns>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string? Get() => Volatile.Read(ref _value);
@@ -43,12 +44,15 @@ public sealed class AtomicString
     /// <summary>
     /// Atomically sets the value and returns the previous value (may be null).
     /// </summary>
+    /// <param name="value">Replacement value to store atomically.</param>
+    /// <returns>The value that was stored before the atomic update.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string? Exchange(string? value) => Interlocked.Exchange(ref _value, value);
 
     /// <summary>
     /// Clears the value (sets to null) and returns the previous value (may be null).
     /// </summary>
+    /// <returns>The value that was stored before the atomic update.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string? Clear() => Interlocked.Exchange(ref _value, null);
 
@@ -56,6 +60,8 @@ public sealed class AtomicString
     /// Attempts to set the value only if the current value is null.
     /// Returns true if the caller won the race and published <paramref name="value"/>.
     /// </summary>
+    /// <param name="value">Replacement value stored only when the expected value matches.</param>
+    /// <returns>true if the requested update was applied; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TrySet(string value)
     {
@@ -69,6 +75,8 @@ public sealed class AtomicString
     /// Attempts to set the value only if the current value is null or empty.
     /// Returns true if the value was set by this call.
     /// </summary>
+    /// <param name="value">Replacement value stored only when the expected value matches.</param>
+    /// <returns>true if the requested update was applied; otherwise, false.</returns>
     public bool TrySetIfNullOrEmpty(string value)
     {
         if (value is null)
@@ -98,6 +106,9 @@ public sealed class AtomicString
     /// Atomically replaces the value if the current value reference equals <paramref name="comparand"/>.
     /// Returns the original value (may be null).
     /// </summary>
+    /// <param name="value">Replacement value stored only when the expected value matches.</param>
+    /// <param name="comparand">Expected current value required for the atomic replacement.</param>
+    /// <returns>The value observed before the compare-and-exchange attempt.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string? CompareExchange(string? value, string? comparand) =>
         Interlocked.CompareExchange(ref _value, value, comparand);
@@ -106,6 +117,9 @@ public sealed class AtomicString
     /// Atomically replaces the value if the current value reference equals <paramref name="comparand"/>.
     /// Returns true if the exchange occurred.
     /// </summary>
+    /// <param name="value">Replacement value stored only when the expected value matches.</param>
+    /// <param name="comparand">Expected current value required for the atomic replacement.</param>
+    /// <returns>true if atomically replaces the value if the current value reference equals . Returns true if the exchange occurred; otherwise, false.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryCompareExchange(string? value, string? comparand) =>
         ReferenceEquals(Interlocked.CompareExchange(ref _value, value, comparand), comparand);
@@ -114,6 +128,8 @@ public sealed class AtomicString
     /// Returns the current value if present; otherwise computes a value, publishes it (best-effort),
     /// and returns the published value.
     /// </summary>
+    /// <param name="factory">Factory used to create a value when one is needed.</param>
+    /// <returns>The current value.</returns>
     [Pure]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string GetOrAdd(Func<string> factory)
