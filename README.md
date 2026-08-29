@@ -13,6 +13,33 @@ A lock-free, thread-safe wrapper for atomically publishing and reading a `string
 dotnet add package Soenneker.Atomics.Strings
 ```
 
+## Usage
+
+Publish a value only when no value exists:
+
+```csharp
+using Soenneker.Atomics.Strings;
+
+var currentEndpoint = new AtomicString();
+
+if (currentEndpoint.TrySet("https://api.example.com"))
+{
+    // This caller won the null-to-value transition.
+}
+
+string? endpoint = currentEndpoint.Get();
+```
+
+`GetOrAdd` returns the already-published value or creates a candidate:
+
+```csharp
+string instanceId = id.GetOrAdd(CreateInstanceId);
+```
+
+Under contention, multiple callers can run the factory; only one string is published and every caller returns the winner. Keep the factory side-effect free. It must not return `null`.
+
+`CompareExchange` compares string references, not string contents. Equal strings held by different object references do not satisfy the comparand check. Use `TrySet`, `Exchange`, or an application-level loop when content equality is required.
+
 ## What you get
 
 - `AtomicString` — A lock-free, thread-safe wrapper for atomically publishing and reading a `string` reference. Useful for shared string state and one-time (or racing) initialization without locks.
