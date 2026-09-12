@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -144,6 +144,32 @@ public sealed class AtomicString
         return GetOrAddSlow(factory);
     }
 
+    /// <summary>
+    /// Returns the current string or publishes a factory result using caller-supplied state, avoiding a capturing callback.
+    /// Concurrent callers may invoke the factory more than once and receive the winner of the publication attempt.
+    /// </summary>
+    /// <typeparam name="TState">The type of state supplied to the factory.</typeparam>
+    /// <param name="state">State passed to the factory.</param>
+    /// <param name="factory">Creates a non-null string when the value is absent.</param>
+    /// <returns>The existing or published string.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public string GetOrAdd<TState>(TState state, Func<TState, string> factory)
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+        return Volatile.Read(ref _value) ?? GetOrAddSlow(state, factory);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private string GetOrAddSlow<TState>(TState state, Func<TState, string> factory)
+    {
+        string? existing = Volatile.Read(ref _value);
+        if (existing is not null)
+            return existing;
+
+        string created = factory(state) ?? throw new InvalidOperationException("AtomicString factory returned null.");
+        return Interlocked.CompareExchange(ref _value, created, null) ?? created;
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private string GetOrAddSlow(Func<string> factory)
     {
@@ -155,7 +181,6 @@ public sealed class AtomicString
         string created = factory() ?? throw new InvalidOperationException("AtomicString factory returned null.");
 
         // Publish (races fine); return the winner
-        Interlocked.CompareExchange(ref _value, created, null);
-        return Volatile.Read(ref _value)!;
+        return Interlocked.CompareExchange(ref _value, created, null) ?? created;
     }
 }
