@@ -7,7 +7,7 @@ namespace Soenneker.Atomics.Strings.Tests;
 public sealed class StringRegressionTests
 {
     [Test]
-    public async ValueTask Clear_races_never_make_publication_return_null()
+    public async ValueTask Clear_races_never_make_publication_return_null(CancellationToken cancellationToken)
     {
         var value = new AtomicString();
         int stop = 0, nulls = 0;
@@ -15,7 +15,7 @@ public sealed class StringRegressionTests
         {
             while (Volatile.Read(ref stop) == 0)
                 value.Clear();
-        });
+        }, cancellationToken: cancellationToken);
         try
         {
             for (int i = 0; i < 100000; i++)
@@ -33,7 +33,7 @@ public sealed class StringRegressionTests
     }
 
     [Test]
-    public async ValueTask State_factory_is_used_only_when_absent()
+    public async ValueTask State_factory_is_used_only_when_absent(CancellationToken cancellationToken)
     {
         var value = new AtomicString();
         await Assert.That(value.GetOrAdd("first", static state => state)).IsEqualTo("first");
